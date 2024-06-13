@@ -1,0 +1,4 @@
+*.cache filter=lfs diff=lfs merge=lfs -text
+*.uff filter=lfs diff=lfs merge=lfs -text
+*.etlt filter=lfs diff=lfs merge=lfs -text
+*.engine filter=lfs diff=lfs merge=lfs -text

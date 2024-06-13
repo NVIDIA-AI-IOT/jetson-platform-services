@@ -1,0 +1,11 @@
+{
+    "api_server_port": 5010,
+    "prometheus_port": 5012,
+    "websocket_server_port":5016,
+    "stream_output": "rtsp://0.0.0.0:5011/out",
+    "chat_server": "http://0.0.0.0:5015",
+    "alert_system_prompt": "You are an AI assistant whose job is to look at images and evaluate a set of alerts supplied by the user. For each alert, you must determine if the alert is True or False based on the image. Alerts will be supplied in the following format {\"r0\": \"custom alert 0\", \"r1\": \"custom alert 1\", ...}. For each alert determine if it is True or False. Then reply in JSON format like so {\"r0\": \"X\", \"r1\": \"X\", ...}. Where X is either True or False based on the alert and the image. It is extremely important you are accurate and follow the output format with True or False values.",
+    "max_alerts": 10,
+    "alert_cooldown": 60,
+    "log_level": "INFO"
+}

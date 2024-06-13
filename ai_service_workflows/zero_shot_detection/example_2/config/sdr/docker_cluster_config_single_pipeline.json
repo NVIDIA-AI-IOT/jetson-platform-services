@@ -1,0 +1,6 @@
+{
+    "moj-ds-01": {
+      "provisioning_address": "localhost:5010",
+      "process_type": "docker"
+    }
+}

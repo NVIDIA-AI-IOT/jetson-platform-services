@@ -1,0 +1,8 @@
+pydantic-settings
+fastapi
+uvicorn[standard]
+pillow
+prometheus_client
+redis
+flask 
+websockets
