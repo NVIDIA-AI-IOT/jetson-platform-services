@@ -24,7 +24,7 @@ Many of the common components that can be used for building new microservices ha
 After modifying the source code, you can test the changes by launching the container with the compose-dev.yaml file 
 
 ```
-cd ~/jetson-services/inference/vlm
+cd ~/jetson-platform-services/inference/vlm
 docker compose -f compose-dev.yaml up 
 ```
 
@@ -45,7 +45,7 @@ First ensure you have followed the [docker setup steps](./../../README.md#setup)
 Navigate to the ```vlm``` directory 
 
 ```
-cd ~/jetson-services/inference/vlm
+cd ~/jetson-platform-services/inference/vlm
 sudo bash build_container.sh 
 ```
 
@@ -54,13 +54,13 @@ The build container script will rebuild the container with the modified source c
 You can then launch the container with the compose.yaml file 
 
 ```
-cd ~/jetson-services/inference/vlm
+cd ~/jetson-platform-services/inference/vlm
 sudo docker compose up
 ```
 
 It can also be launched from the workflow examples 
 
 ```
-cd ~/jetson-services/ai_service_workflow/vlm/example_1/
+cd ~/jetson-platform-services/ai_service_workflow/vlm/example_1/
 sudo docker compose up 
 ```
