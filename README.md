@@ -56,14 +56,14 @@ AI services are individual containers that implement a specific AI related funct
 2) [Visual Language Model (VLM)](inference/vlm/README.md)
 3) [DeepStream Perception](inference/perception/README.md)
 
-## Workflows 
+### Workflows 
 
 Workflows combine several parts of Jetson Platform Services to create full systems such as Zero Shot Detection with dynamic camera routing and a VLM based alert system with mobile app integration.
 
 1) [Zero Shot Detection with SDR](https://docs.nvidia.com/jetson/jps/workflows/zero_shot_detection_workflow.html)
 2) [VLM Alert System](https://docs.nvidia.com/jetson/jps/workflows/vlm_workflow.html)
 
-## Notebooks
+### Notebooks
 
 A sample Jupyter Notebook is provided to show how Jetson Platform Services can be used to generate traffic analytics. 
 
