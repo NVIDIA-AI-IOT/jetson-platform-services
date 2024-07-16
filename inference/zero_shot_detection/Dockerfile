@@ -69,6 +69,7 @@ RUN python3 -c 'import jetson_utils'
 
 
 #Install precombiled ML dependecies 
+RUN pip3 install numpy==1.26.4
 RUN pip3 install http://jetson.webredirect.org/jp6/cu122/+f/495/0f0f86d0321dc/torch-2.2.0-cp310-cp310-linux_aarch64.whl#sha256=4950f0f86d0321dccfb8fe749ba0b8f8ee9af67b52008c1cb3ff8d47c6336b23
 RUN pip3 install http://jetson.webredirect.org/jp6/cu122/+f/386/c2ff9c802a980/torchvision-0.17.2+c1d70fe-cp310-cp310-linux_aarch64.whl#sha256=386c2ff9c802a9807b238310e773ffd3d87dfb9ed0a12a3aaf5b178e7b829ba0
 RUN pip3 install http://jetson.webredirect.org/jp6/cu122/+f/54d/5094104195427/onnxruntime_gpu-1.17.0-cp310-cp310-linux_aarch64.whl#sha256=54d509410419542764627aebf6542734a7c5b4d260ad0860b650e05f38b1b47a
