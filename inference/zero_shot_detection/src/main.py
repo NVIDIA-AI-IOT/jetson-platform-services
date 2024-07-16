@@ -32,6 +32,27 @@ def process_prompt(prompt):
     thresholds = [float(x) for x in thresholds]
     return objects, thresholds 
 
+def resize_bboxes(bboxes, original_size, new_size):
+    original_width, original_height = original_size
+    new_width, new_height = new_size
+    
+    # Calculate the scaling factors
+    scale_x = new_width / original_width
+    scale_y = new_height / original_height
+    
+    # Resize each bounding box
+    resized_bboxes = []
+    for bbox in bboxes:
+        x1, y1, x2, y2 = bbox
+        new_x1 = int(x1 * scale_x)
+        new_y1 = int(y1 * scale_y)
+        new_x2 = int(x2 * scale_x)
+        new_y2 = int(y2 * scale_y)
+        resized_bboxes.append([new_x1, new_y1, new_x2, new_y2])
+    
+    return resized_bboxes
+
+
 #Load config
 config_path = os.environ["MAIN_CONFIG_PATH"] #TODO connect the configs 
 config = load_config(config_path)
@@ -121,7 +142,7 @@ while(True):
 
         if objects and thresholds:
             output = predictor.predict(
-                image = image, #send original resolution image to model 
+                image = image,
                 text = objects,
                 text_encodings = objects_encoding,
                 threshold = thresholds,
@@ -131,11 +152,14 @@ while(True):
             #Generate overlay and output on the resized image 
             text_labels = [objects[x] for x in output.labels]
             bboxes = output.boxes.tolist()
-            resized_image = overlay_gen(resized_image, text_labels, bboxes) 
+            resized_bboxes = resize_bboxes(bboxes, (image.width, image.height), (resized_image.width, resized_image.height))
+
+            image = overlay_gen(resized_image, text_labels, resized_bboxes) #generate overlay on resized image
 
             #Generate metadata in mmj schema and output on redis 
             if frame_counter % config.redis_output_interval == 0:
-                schema_gen(text_labels, bboxes) 
-            
+                schema_gen(text_labels, bboxes) #redis output in original image dimensions
+        
+
         frame_counter+=1
         v_output(resized_image)
