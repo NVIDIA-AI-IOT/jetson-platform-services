@@ -100,8 +100,13 @@ while(True):
 
         if message.type == "classes":
             objects, thresholds = process_prompt(message.data)
-            objects_encoding = predictor.encode_text(objects)
-            cmd_resp[message.id] = "Detection classes set."
+            if len(objects) > 0 and len(thresholds) > 0:
+                objects_encoding = predictor.encode_text(objects)
+                cmd_resp[message.id] = "Detection classes set."
+            else:
+                objects = None 
+                thresholds = None 
+                cmd_resp[message.id] = "Detection classes cleared."
             
         elif message.type == "stream_add":
                 logging.debug("Message is a stream add")
