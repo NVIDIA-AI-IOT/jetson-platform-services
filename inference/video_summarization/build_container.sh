@@ -1,0 +1,1 @@
+DOCKER_BUILDKIT=0 docker build -t nvcr.io/e7ep4mig3lne/nvidia-dev/vlm_summarization:1.2.0 .

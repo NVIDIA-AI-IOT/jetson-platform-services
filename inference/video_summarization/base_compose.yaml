@@ -1,0 +1,205 @@
+version: '2'
+services:
+  moj-init-ds:
+    image: ubuntu@sha256:77906da86b60585ce12215807090eb327e7386c8fafb5402369e421f44eff17e
+    network_mode: "host"
+    volumes:
+      - ./config/init-container/health-check-script.sh:/health-check-script.sh
+    command: sh -c "chmod 1777 /tmp && /health-check-script.sh"
+    environment:
+      PORTS: "6379" # "6379,30080"
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+  moj-http-based-init-emdx-analytics:
+    image: ubuntu@sha256:77906da86b60585ce12215807090eb327e7386c8fafb5402369e421f44eff17e
+    network_mode: "host"
+    volumes:
+      - ./config/init-container/http-healthcheck-script.sh:/http-healthcheck-script.sh
+    command: sh -c "chmod 1777 /tmp && /http-healthcheck-script.sh"
+    environment:
+      ENDPOINTS: "5000/api/core/healthz" # sample values "81/v1/sensor/help,30080/ingess/api/tz"
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+  moj-http-based-init-sdr-emdx:
+    image: ubuntu@sha256:77906da86b60585ce12215807090eb327e7386c8fafb5402369e421f44eff17e
+    network_mode: "host"
+    volumes:
+      - ./config/init-container/health-check-script.sh:/health-check-script.sh
+      - ./config/init-container/http-healthcheck-script.sh:/http-healthcheck-script.sh
+    command: sh -c "chmod 1777 /tmp && /health-check-script.sh && /http-healthcheck-script.sh"
+    environment:
+      PORTS: "6379" # "6379,30080"
+      ENDPOINTS: "5000/api/core/healthz,81/api/v1/live/streams" # sample values "81/v1/sensor/help,30080/ingess/api/tz"
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+  moj-http-based-init-sdr:
+    image: ubuntu@sha256:77906da86b60585ce12215807090eb327e7386c8fafb5402369e421f44eff17e
+    network_mode: "host"
+    volumes:
+      - ./config/init-container/health-check-script.sh:/health-check-script.sh
+      - ./config/init-container/http-healthcheck-script.sh:/http-healthcheck-script.sh
+    command: sh -c "chmod 1777 /tmp && /health-check-script.sh && /http-healthcheck-script.sh"
+    environment:
+      PORTS: "6379" # "6379,30080"
+      ENDPOINTS: "9010/api/v1/stream/add,9010/api/v1/stream/add,81/api/v1/live/streams" # sample values "81/v1/sensor/help,30080/ingess/api/tz"
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+  moj-http-based-init-sdr-reprovision-controller:
+    image: ubuntu@sha256:77906da86b60585ce12215807090eb327e7386c8fafb5402369e421f44eff17e
+    network_mode: "host"
+    volumes:
+      - ./config/init-container/health-check-script.sh:/health-check-script.sh
+      - ./config/init-container/http-healthcheck-script.sh:/http-healthcheck-script.sh
+    command: sh -c "chmod 1777 /tmp && /health-check-script.sh && /http-healthcheck-script.sh"
+    environment:
+      PORTS: "4001" # "6379,30080"
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+  emdx-analytics-01:
+    image: nvcr.io/nvstaging/jps/emdx-analytics:jps_v1.1
+    user: "0:0"
+    network_mode: "host"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "8192m"
+        max-file: "3"
+    environment:
+      CONFIG_LOCATION: "/config"
+      INSTANCE_ID: emdx-analytics-01
+      PORT: 6001
+      LOGS_DIR: /logs
+    volumes:
+      - ./config/emdx-analytics:/config
+      - /data/emdx-volume:/data/emdx-volume
+      - /data/logging-volume:/logs
+    restart: always
+    container_name: emdx-analytics-01
+    depends_on:
+      moj-http-based-init-emdx-analytics:            
+        condition: service_completed_successfully
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+      restart_policy:
+        condition: always
+  
+  emdx-analytics-02:
+    image: nvcr.io/nvstaging/jps/emdx-analytics:jps_v1.1
+    user: "0:0"
+    network_mode: "host"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "8192m"
+        max-file: "3"
+    environment:
+      CONFIG_LOCATION: "/config"
+      PORT: 6002
+      INSTANCE_ID: emdx-analytics-02
+      LOGS_DIR: /logs  
+    volumes:
+      - ./config/emdx-analytics:/config
+      - /data/emdx-volume:/data/emdx-volume
+      - /data/logging-volume:/logs
+    restart: always
+    container_name: emdx-analytics-02
+    depends_on:
+      moj-http-based-init-emdx-analytics:            
+        condition: service_completed_successfully
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+      restart_policy:
+        condition: always
+
+  emdx-webapi:
+    image: nvcr.io/nvstaging/jps/emdx-analytics-web-api:jps_v1.1
+    user: "0:0"
+    network_mode: "host"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "8192m"
+        max-file: "3"    
+    restart: always
+    environment:
+      CONFIG_LOCATION: "/usr/emdx/webapi/config/"
+      PORT: 5000
+      LOGS_DIR: /logs  
+    volumes:
+      - ./config/emdx-webapi:/usr/emdx/webapi/config
+      - /data/emdx-volume:/data/emdx-volume
+      - /data/logging-volume:/logs
+    container_name: emdx-webapi
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+      restart_policy:
+        condition: always
+
+  sdr-emdx:
+    image: nvcr.io/nvstaging/jps/sdr:jps-v2.0.4
+    network_mode: "host"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "8192m"
+        max-file: "3"
+    container_name: sdr-emdx
+    volumes:
+      - ./config/sdr-emdx:/wdm-configs
+      - /data/sdr-volume:/wdm-data
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /data/logging-volume:/log
+    environment:
+      WDM_WL_SPEC: /wdm-data/emdx-data_wl.yaml
+      WDM_CLUSTER_CONFIG_FILE: /wdm-configs/docker_cluster_config.json
+      WDM_MSG_KEY: vst.event
+      WDM_WL_REDIS_MSG_FIELD: sensor.id
+      WDM_WL_ADD_URL: /analytics/sensors/add
+      WDM_WL_DELETE_URL: /analytics/sensors/remove
+      WDM_WL_HEALTH_CHECK_URL: /analytics/healthz
+      WDM_WL_CHANGE_ID_ADD: camera_streaming
+      WDM_PRELOAD_WORKLOAD: ./tests/event_pre-roll.json
+      WDM_CLEAR_DATA_WL: true
+      WDM_KFK_ENABLE: false
+      WDM_DS_SWAP_ID_NAME: true
+      WDM_VALIDATE_BEFORE_ADD: true
+      WDM_PRELOAD_DELAY_FOR_DS_API: true
+      WDM_WL_THRESHOLD: 8
+      WDM_CLUSTER_TYPE: docker
+      WDM_POD_WATCH_DOCKER_DELAY: 0.5
+      WDM_DS_STATUS_CHECK: false
+      WDM_DISABLE_WERKZEUG_LOGGING: true
+      WDM_WL_OBJECT_NAME: sdr-emdx
+      WDM_CONSUMER_GRP_ID: sdr-emdx-cg
+      WDM_CLUSTER_CONTAINER_NAMES: '["emdx-analytics-01", "emdx-analytics-02", "vst"]'
+    depends_on:
+      moj-http-based-init-sdr-emdx:            
+        condition: service_completed_successfully
+      emdx-analytics-01:
+        condition: service_started
+      emdx-analytics-02:
+        condition: service_started
+    deploy:
+      resources:
+        limits:
+          memory: 300M
+      restart_policy:
+        condition: always
+    entrypoint: []
+    command: sh -c '/wdm/dist/sdr 2>&1 | tee -a /log/sdr-emdx.log'
