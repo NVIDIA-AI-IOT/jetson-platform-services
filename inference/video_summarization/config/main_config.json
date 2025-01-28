@@ -1,0 +1,15 @@
+{
+    "api_server_port": 19000,
+    "redis_host": "localhost",
+    "redis_port": 6379,
+    "redis_stream": "test",
+    "redis_output_interval": 60,
+    "log_level": "INFO", 
+    "jetson_ip": "localhost",
+    "video_port": 81,
+    "max_images": 8,
+    "ingress_port": 30080,
+    "streamer_port": 31000,
+    "segment_time": 20,
+    "openai_api_key": "key"
+}

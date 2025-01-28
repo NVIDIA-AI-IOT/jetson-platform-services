@@ -1,0 +1,12 @@
+git+https://github.com/NVIDIA-AI-IOT/mmj_utils
+pydantic==2.9.2
+pydantic_core==2.23.4
+pydantic-settings==2.0.1
+fastapi==0.115.6
+ipdb==0.13.13
+scikit-learn==1.5.2
+sentence-transformers==3.2.1
+openai==0.28.0
+gradio_calendar==0.0.6
+einops==0.8.0
+onnx==1.17.0

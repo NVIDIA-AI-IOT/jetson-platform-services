@@ -1,0 +1,9 @@
+{
+    "api_server_port": 5010,
+    "stream_output": "rtsp://0.0.0.0:5011/out",
+    "redis_host": "0.0.0.0",
+    "redis_port": 6379,
+    "redis_stream": "owl",
+    "redis_output_interval": 60,
+    "log_level": "INFO"
+}

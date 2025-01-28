@@ -1,0 +1,7 @@
+ruleset_overrides:                                                        # Enables override of specific rule severity (per ruleset). Naming must match one to one.
+  standard-owasp:                                                         # Ruleset name without the .yml/.yaml extension
+    owasp:api3:2019-define-error-responses-500: warn                      # Rule name as referenced within the ruleset
+    owasp:api4:2019-string-limit: warn
+    owasp:api4:2019-string-restricted: warn
+  standard-nvidia:
+    nspect-id-definition: warn

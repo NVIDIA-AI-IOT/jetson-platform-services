@@ -1,0 +1,106 @@
+# SPDX-FileCopyrightText: Copyright (c) 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+services:
+  jps_zero_shot_detection:
+    image: nvcr.io/nvidia/jps/zero_shot_detection_infer:2.0.0
+    user: "2009:150"
+    network_mode: "host"
+    runtime: nvidia
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "8192m"
+        max-file: "3"
+    environment:
+      MAIN_CONFIG_PATH: /config/main_config.json
+      TRANSFORMERS_CACHE: /data/models/huggingface
+    restart: always
+    container_name: jps_zero_shot_detection
+    healthcheck:
+      test: "wget --spider --method=GET http://localhost:5010/api/v1/health/ready"
+      interval: 30s
+      timeout: 5s 
+      retries: 5
+      start_period: 15s 
+    volumes:
+      - /tmp/argus_socket:/tmp/argus_socket
+      - /etc/enctune.conf:/etc/enctune.conf
+      - /etc/nv_tegra_release:/etc/nv_tegra_release
+      - /data/genai-volume:/data
+      - /data/logging-volume:/data/logging-volume
+      - ./config:/config
+      - type: bind
+        source: /proc/device-tree/model
+        target: /tmp/nv_jetson_model
+        read_only: True
+
+    command: bash -c "/jetson-services/inference/zero_shot_detection/docker_start.sh | tee -a /data/logging-volume/zero_shot_detection.log"
+    deploy:
+      resources:
+        limits:
+          memory: 5600M
+      restart_policy:
+        condition: always
+
+  sdr:
+    image: nvcr.io/nvidia/jps/sdr:2.2-8-14-v1
+    network_mode: "host"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "8192m"
+        max-file: "3"
+    container_name: sdr
+    volumes:
+      - ./config/sdr:/wdm-configs
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /data/logging-volume:/log
+    environment:
+      WDM_WL_SPEC: /wdm-configs/data_wl.yaml
+      WDM_CLUSTER_CONFIG_FILE: /wdm-configs/docker_cluster_config_single_pipeline.json
+      WDM_MSG_KEY: vst.event
+      WDM_WL_REDIS_MSG_FIELD: sensor.id
+      WDM_WL_ADD_URL: /api/v1/live-stream
+      WDM_WL_DELETE_URL: /api/v1/live-stream
+      WDM_WL_HEALTH_CHECK_URL: /api/v1/health/ready
+      WDM_WL_CHANGE_ID_ADD: camera_streaming
+      WDM_PRELOAD_WORKLOAD: ./tests/event_pre-roll.json
+      WDM_CLEAR_DATA_WL: true
+      WDM_KFK_ENABLE: false
+      WDM_DS_SWAP_ID_NAME: true
+      WDM_VALIDATE_BEFORE_ADD: true
+      WDM_PRELOAD_DELAY_FOR_DS_API: true
+      WDM_WL_THRESHOLD: 1
+      WDM_CLUSTER_TYPE: docker
+      WDM_POD_WATCH_DOCKER_DELAY: 0.5
+      WDM_DS_STATUS_CHECK: true
+      WDM_WL_OBJECT_NAME: sdr-deepstream
+      WDM_CONSUMER_GRP_ID: sdr-deepstream-cg
+      WDM_CLUSTER_CONTAINER_NAMES: '["jps_zero_shot_detection", "vst"]'
+      WDM_NIMS_FORMAT: true
+    deploy:
+      resources:
+        limits:
+          memory: 300M
+      restart_policy:
+        condition: always
+
+    depends_on:
+      jps_zero_shot_detection:
+        condition: service_healthy 
+
+    entrypoint: []
+    command: sh -c '/wdm/dist/sdr 2>&1 | tee -a /log/sdr-zero_shot_detection.log'

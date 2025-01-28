@@ -1,0 +1,6 @@
+[submodule "common/mmj_utils"]
+	path = common/mmj_utils
+	url = https://github.com/NVIDIA-AI-IOT/mmj_utils
+[submodule "inference/perception/dependencies/deepstream_tools"]
+	path = inference/perception/dependencies/deepstream_tools
+	url = https://github.com/NVIDIA-AI-IOT/deepstream_tools

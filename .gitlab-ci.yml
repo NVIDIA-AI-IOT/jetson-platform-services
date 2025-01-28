@@ -1,0 +1,61 @@
+# Copyright (c) 2019-2021, NVIDIA CORPORATION.  All rights reserved.
+#
+# NVIDIA CORPORATION and its licensors retain all intellectual property
+# and proprietary rights in and to this software, related documentation
+# and any modifications thereto.  Any use, reproduction, disclosure or
+# distribution of this software and related documentation without an express
+# license agreement from NVIDIA CORPORATION is strictly prohibited.
+
+stages:
+  - api:gnr8:pre
+  - api:lint
+  - api:gnr8:post
+
+api-pre-lint:
+  stage: api:gnr8:pre
+  image:
+    name: python:3.10-alpine  
+  script:
+    - env
+    - echo "UPSTREAM_JOB=$CI_JOB_ID" > upstream.env
+  artifacts:
+    paths:
+      - specs/vlm.openapi.json
+      - specs/zero_shot_detection.openapi.json
+      - .spectral-extension.yml
+    reports:
+      dotenv: upstream.env
+
+api-governance-linter:  
+  stage: api:lint
+  rules:
+  - exists:
+    - specs/vlm.openapi.json
+    - specs/zero_shot_detection.openapi.json
+  variables:
+    S_INPUT:
+      value: $CI_PROJECT_URL
+    S_INPUT_BRANCH:
+      value: $CI_COMMIT_REF_NAME
+    S_INPUT_SUBPATH:
+      value: "specs"
+    S_INPUT_FILEGLOB:
+      value: '**/*.json'
+  trigger:
+    branch: feat-ruleset-release
+    strategy: depend
+    project: api-standards/api-governance/pipeline
+  needs:
+    - job: api-pre-lint
+      optional: true
+
+api-post-lint:
+  stage: api:gnr8:post
+  image:
+    name: python:3.10-alpine  
+  script:
+    - env
+  needs:
+    - job: api-governance-linter
+      optional: true
+

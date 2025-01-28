@@ -1,0 +1,1 @@
+DOCKER_BUILDKIT=0 docker build -t nvcr.io/nvidia/jps/vlm_summarization:2.0.9 .
